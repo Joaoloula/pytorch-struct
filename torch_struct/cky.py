@@ -15,7 +15,6 @@ class CKY(_Struct):
         ssize = semiring.size()
         batch, N, T = terms.shape
         _, NT, _, _ = rules.shape
-        S = NT + T
 
         terms, rules, roots = (
             semiring.convert(terms).requires_grad_(True),
@@ -32,9 +31,9 @@ class CKY(_Struct):
         term_use = terms + 0.0
 
         # Split into NT/T groups
-        NTs = slice(0, NT)
-        Ts = slice(NT, S)
-        rules = rules.view(ssize, batch, 1, NT, S, S)
+        NTs = slice(0, NT - T)
+        Ts = slice(NT - T, NT)
+        rules = rules.view(ssize, batch, 1, NT, NT, NT)
 
         def arr(a, b):
             return rules[..., a, b].contiguous().view(*v + (NT, -1)).transpose(-2, -1)
