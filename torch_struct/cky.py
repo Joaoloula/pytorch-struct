@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def logpartition(self, scores, lengths=None, force_grad=False):
+    def cky(self, scores, lengths=None, force_grad=False):
 
         semiring = self.semiring
 
@@ -74,8 +74,13 @@ class CKY(_Struct):
             beta[B][w:N, N - w - 1, :] = span[w]
 
         final = beta[A][0, :, NTs]
+
+        return final, (term_use, rules, roots, span, lengths)
+
+    def logpartition(self, scores, lengths=None, force_grad=False):
+        final, (term_use, rules, roots, span, lengths) = self.cky(scores, lengths=lengths)
         top = torch.stack([final[:, i, l - 1] for i, l in enumerate(lengths)], dim=1)
-        log_Z = semiring.dot(top, roots)
+        log_Z = self.semiring.dot(top, roots)
         return log_Z, (term_use, rules, roots, span[1:])
 
     def marginals(self, scores, lengths=None, _autograd=True, _raw=False):
